@@ -23,12 +23,19 @@ module.exports.getUser = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  // eslint-disable-next-line object-curly-newline
-  const { name, about, avatar, email, password } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
   bcrypt.hash(password, 10)
-    // eslint-disable-next-line object-curly-newline
-    .then((hash) => User.create({ name, about, avatar, email, hash }))
-    .then((user) => res.send(user))
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
+    .then((user) => {
+      res.status(201).send({
+        _id: user._id,
+        email: user.email,
+      });
+    })
     .catch((err) => res.status(500).send({ message: err.message }));
 };
 
@@ -39,8 +46,9 @@ module.exports.login = (req, res) => {
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, "super-strong-secret", { expiresIn: "7d" });
       res.cookie("jwt", token, {
-        maxAge: 3600000,
+        maxAge: 3600000 * 24 * 7,
         httpOnly: true,
+        sameSite: true,
       })
         .end();
     })

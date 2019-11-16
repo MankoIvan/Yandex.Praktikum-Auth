@@ -24,22 +24,23 @@ const userSchema = new mongoose.Schema({
     required: true,
     type: String,
     unique: true,
+    validate: {
+      validator: (v) => validator.isEmail(v),
+      message: "Неправильный формат почты",
+    },
   },
   password: {
     required: true,
     type: String,
     minlength: 8,
-    validate: {
-      validator: (v) => validator.isEmail(v),
-      message: "Неправильный формат почты",
-    },
     select: false,
   },
 });
 
 // eslint-disable-next-line arrow-body-style
-userSchema.statics.findUserByCredentials = (email, password) => {
-  return this.findOne({ email }).select(+"password")
+userSchema.statics.findUserByCredentials = function (email, password) {
+  console.log(this);
+  return this.findOne({ email }).select("+password")
     .then((user) => {
       if (!user) {
         return Promise.reject(new Error("Неправильные почта или пароль"));

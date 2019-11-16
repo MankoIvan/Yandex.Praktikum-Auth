@@ -11,13 +11,25 @@ module.exports.createCard = (req, res) => {
   const owner = req.user._id;
 
   Card.create({ name, link, owner })
-    .then((card) => res.send(card))
+    .then((card) => res.status(201).send(card))
     .catch((err) => res.status(500).send({ message: err.message }));
 };
 
 module.exports.deleteCard = (req, res) => {
   const { cardId } = req.params;
-  Card.findByIdAndRemove(cardId)
-    .then((card) => res.send(card))
+  Card.findById(cardId)
+    .then((card) => {
+      if (card) {
+        if (card.owner === req.user._id) {
+          Card.findByIdAndRemove(cardId)
+            .then((deletedCard) => res.send(deletedCard))
+            .catch((err) => res.status(500).send({ message: err.message }));
+        } else {
+          res.send({ message: "Вы не можете удалять чужие карточки" });
+        }
+      } else {
+        res.send({ message: "Эта карточка не найдена" });
+      }
+    })
     .catch((err) => res.status(500).send({ message: err.message }));
 };
