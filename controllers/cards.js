@@ -20,7 +20,7 @@ module.exports.deleteCard = (req, res) => {
   Card.findById(cardId)
     .then((card) => {
       if (card) {
-        if (card.owner === req.user._id) {
+        if (card.owner.toString() === req.user._id) {
           Card.findByIdAndRemove(cardId)
             .then((deletedCard) => res.send(deletedCard))
             .catch((err) => res.status(500).send({ message: err.message }));
